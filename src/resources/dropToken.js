@@ -62,8 +62,21 @@ router.delete('/:gameId/:playerId', (req, res) => {
 });
 
 // GET a game's list of moves
-router.get('/:id/moves', (req, res) => {
-  const moves = [{ type: "MOVE", player: "player1", column: 2 }];
+router.get('/:gameId/moves', async (req, res) => {
+  const { gameId } = req.params;
+  let { start, until } = req.query;
+  const gamesRepo = new Games();
+  const { statusCode, body } = await gamesRepo.getGameById(gameId);
+  const game = body;
+  start = parseInt(start || 0);
+  until = parseInt(until || -1);
+  if (start < 0) {
+    start = 0;
+  }
+  if (until < 0) {
+    until = game.moves.length;
+  }
+  const moves = { moves: game.moves.slice(start, until) };
   res.send(moves);
 });
 
