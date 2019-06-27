@@ -129,5 +129,9 @@ export class Game {
     return this.state == STATE_LIVE;
   }
 
+  hasPlayer(playerName) {
+    return this.players.indexOf(playerName) != -1;
+  }
+
 }
 

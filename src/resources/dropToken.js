@@ -50,7 +50,7 @@ router.post('/:gameId/:playerId', async (req, res) => {
     return;
   }
   const moveNumber = game.newMove(playerId, column);
-  // TODO: Add error for invalid moves
+  // TODO: Add errors for invalid players and moves
   game = gamesRepo.updateGame(game);
   if (game) {
     const move = { move: `/${gameId}/moves/${moveNumber}` };
@@ -61,15 +61,25 @@ router.post('/:gameId/:playerId', async (req, res) => {
 });
 
 // DELETE a player from a game (resign)
-router.delete('/:gameId/:playerId', (req, res) => {
+router.delete('/:gameId/:playerId', async (req, res) => {
   const { gameId, playerId } = req.params;
-  const moveNumber = 1;
-  const move = `/${id}/moves/${moveNumber}`;
-  res.sendStatus(202);
+  const gamesRepo = new Games();
+  const game = await gamesRepo.getGameById(gameId);
+  if (game === null || !game.hasPlayer(playerId)) {
+    res.status(404).send();
+    return;
+  }
+  if (!game.isLive()) {
+    res.status(410).send();
+    return;
+  }
+  game.quit(playerId);
+  gamesRepo.update(game);
+  res.status(202).send();
 });
 
 // GET a game's list of moves
-router.get('/:gameId/moves', async (req, res, next) => {
+router.get('/:gameId/moves', async (req, res) => {
   const { gameId } = req.params;
   const gamesRepo = new Games();
   const game = await gamesRepo.getGameById(gameId);
@@ -94,9 +104,17 @@ router.get('/:gameId/moves', async (req, res, next) => {
 });
 
 // GET a specific move
-router.get('/:id/moves/:index', (req, res) => {
-  const move = { type: "MOVE", player: "player1", column: 2 };
-  res.send(move);
+router.get('/:gameId/moves/:index', async (req, res) => {
+  const { gameId, index } = req.params;
+  const gamesRepo = new Games();
+  const game = await gamesRepo.getGameById(gameId);
+  let i = parseInt(index);
+  if (game === null || game.moves[i] === undefined) {
+    res.status(404).send();
+    return;
+  }
+  const move = game.moves[index];
+  res.send({ move });
 });
 
 export default router;
