@@ -6,34 +6,37 @@ const router = express.Router();
 // GET list of games
 router.get('/', async (req, res) => {
   const gamesRepo = new Games();
-  const result = await gamesRepo.getGames();
-  res.status(result.statusCode).send(result.body);
+  let games = await gamesRepo.getGames();
+  if (games === null) {
+    games = [];
+  }
+  res.send(games);
 });
 
 // POST new game
 router.post('/', async (req, res) => {
   const gamesRepo = new Games();
-  const result = await gamesRepo.createGame(req.body);
-  res.status(result.statusCode).send(result.body);
+  const game = await gamesRepo.createGame(req.body);
+  res.send({ gameId: game.gameId });
 });
 
 // GET a game's state
 router.get('/:gameId', async (req, res) => {
   const { gameId } = req.params;
   const gamesRepo = new Games();
-  const result = await gamesRepo.getGameById(gameId);
-  if (result.statusCode == 200) {
-    const game = result.body;
-    const slimGame = {
-      players: game.players,
-      state: game.state,
-    };
-    if (!game.isLive()) {
-      game.winner = game.winner;
-    }
-    result.body = slimGame;
+  const game = await gamesRepo.getGameById(gameId);
+  if (game === null) {
+    res.status(404).send();
+    return;
   }
-  res.status(result.statusCode).send(result.body);
+  const slimGame = {
+    players: game.players,
+    state: game.state,
+  };
+  if (!game.isLive()) {
+    slimGame.winner = game.winner;
+  }
+  res.send(slimGame);
 });
 
 // POST a new move
@@ -41,15 +44,19 @@ router.post('/:gameId/:playerId', async (req, res) => {
   const { gameId, playerId } = req.params;
   const { column } = req.body;
   const gamesRepo = new Games();
-  const { statusCode, body } = await gamesRepo.getGameById(gameId);
-  const game = body;
+  let game = await gamesRepo.getGameById(gameId);
+  if (game === null) {
+    res.status(404).send();
+    return;
+  }
   const moveNumber = game.newMove(playerId, column);
-  const result = gamesRepo.updateGame(game);
-  if (result.statusCode == 200) {
+  // TODO: Add error for invalid moves
+  game = gamesRepo.updateGame(game);
+  if (game) {
     const move = { move: `/${gameId}/moves/${moveNumber}` };
     res.send(move);
   } else {
-    res.status(result.statusCode);
+    res.status(500);
   }
 });
 
@@ -62,12 +69,15 @@ router.delete('/:gameId/:playerId', (req, res) => {
 });
 
 // GET a game's list of moves
-router.get('/:gameId/moves', async (req, res) => {
+router.get('/:gameId/moves', async (req, res, next) => {
   const { gameId } = req.params;
-  let { start, until } = req.query;
   const gamesRepo = new Games();
-  const { statusCode, body } = await gamesRepo.getGameById(gameId);
-  const game = body;
+  const game = await gamesRepo.getGameById(gameId);
+  if (game === null || game.moves.length == 0) {
+    res.status(404).send();
+    return;
+  }
+  let { start, until } = req.query;
   start = parseInt(start || 0);
   until = parseInt(until || -1);
   if (start < 0) {
@@ -76,8 +86,11 @@ router.get('/:gameId/moves', async (req, res) => {
   if (until < 0) {
     until = game.moves.length;
   }
-  const moves = { moves: game.moves.slice(start, until) };
-  res.send(moves);
+  const moves = game.moves.slice(start, until).map((move) => {
+    move.player = game.getPlayerName(move.player);
+    return move;
+  });
+  res.send({ moves });
 });
 
 // GET a specific move

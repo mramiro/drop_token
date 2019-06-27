@@ -30,12 +30,16 @@ export default class Games {
     };
     try {
       const data = await this.client.query(params).promise();
+      if (data.Item === undefined) {
+        return null;
+      }
       const ids = data.Items.map((item) => {
         return item.gameId;
       });
-      return { statusCode: 200, body: { games: ids }};
+      return ids;
     } catch (error) {
-      return {statusCode: 400, body: error };
+      console.error(error);
+      return error;
     }
   }
 
@@ -45,11 +49,14 @@ export default class Games {
       Key: { gameId }
     };
     try {
-      const { Item } = await this.client.get(params).promise();
-      const game = new Game(Item);
-      return { statusCode: 200, body: game };
+      const data = await this.client.get(params).promise();
+      if (data.Item === undefined) {
+        return null;
+      }
+      return new Game(data.Item);
     } catch (error) {
-      return {statusCode: 400, body: error };
+      console.error(error);
+      return error;
     }
   }
 
@@ -63,10 +70,11 @@ export default class Games {
     };
     try {
       await this.client.put(params).promise();
-      console.log(`Game ${game.gameId} created`);
-      return { statusCode: 200, body: { gameId: game.gameId }};
+      console.log(`Game ${game.gameId} created.`);
+      return game;
     } catch (error) {
-      return { statusCode: 400, body: error };
+      console.error(error);
+      return error;
     }
   }
 
@@ -77,10 +85,11 @@ export default class Games {
     };
     try {
       await this.client.put(params).promise();
-      console.log(`Game ${game.gameId} updated`);
-      return { statusCode: 200, body: { gameId: game.gameId }};
+      console.log(`Game ${game.gameId} updated.`);
+      return game;
     } catch (error) {
-      return { statusCode: 400, body: error };
+      console.error(error);
+      return error;
     }
   }
 
