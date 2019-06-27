@@ -34,7 +34,7 @@ router.get('/:gameId', async (req, res) => {
     state: game.state,
   };
   if (!game.isLive()) {
-    slimGame.winner = game.winner;
+    slimGame.winner = game.getPlayerName(game.winner);
   }
   res.send(slimGame);
 });
@@ -74,7 +74,7 @@ router.delete('/:gameId/:playerId', async (req, res) => {
     return;
   }
   game.quit(playerId);
-  gamesRepo.update(game);
+  gamesRepo.updateGame(game);
   res.status(202).send();
 });
 
