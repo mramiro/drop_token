@@ -46,13 +46,7 @@ export default class Games {
     };
     try {
       const { Item } = await this.client.get(params).promise();
-      const game = {
-        players: Item.players,
-        state: Item.state,
-      };
-      if (game.state == STATE_DEAD) {
-        game.winner = Item.winner;
-      }
+      const game = new Game(Item);
       return { statusCode: 200, body: game };
     } catch (error) {
       return {statusCode: 400, body: error };
@@ -60,7 +54,7 @@ export default class Games {
   }
 
   async createGame(args) {
-    const game = new Game(args.players, args.columns, args.rows);
+    const game = new Game(args);
     game.gameId = uuidv4();
     game.createDate = (new Date()).toISOString();
     const params = {
@@ -69,13 +63,25 @@ export default class Games {
     };
     try {
       await this.client.put(params).promise();
+      console.log(`Game ${game.gameId} created`);
       return { statusCode: 200, body: { gameId: game.gameId }};
     } catch (error) {
       return { statusCode: 400, body: error };
     }
   }
 
-  updateGame(game) {
+  async updateGame(game) {
+    const params = {
+      TableName: TABLE_NAME,
+      Item: game,
+    };
+    try {
+      await this.client.put(params).promise();
+      console.log(`Game ${game.gameId} updated`);
+      return { statusCode: 200, body: { gameId: game.gameId }};
+    } catch (error) {
+      return { statusCode: 400, body: error };
+    }
   }
 
 }

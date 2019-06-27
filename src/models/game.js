@@ -5,28 +5,26 @@ const QUIT = 'QUIT';
 export const STATE_LIVE = 'IN PROGRESS';
 export const STATE_DEAD = 'DONE';
 
-// const newBoard = (x, y) => {
-//   const board = new Array[x];
-//   for (let i = 0; i < x; i++) {
-//     board[i] = new Array[y];
-//   }
-//   return board;
-// };
-
 const getOtherPlayer = (playerIndex) => {
   return 1 - playerIndex;
 };
 
+const makeMove = (move, board) => {
+  board[move.column].push(move.player);
+  return board;
+};
+
 const replayMoves = (cols, moves) => {
-  const board = new Array[cols];
-  let nextPlayer = 0;
+  const board = [];
+  for (let i = 0; i < cols; i++) {
+    board[i] = [];
+  }
   moves.forEach((move) => {
     if (move.type == MOVE) {
-      board[move.column].push(nextPlayer);
-      nextPlayer = getOtherPlayer(nextPlayer);
+      board[move.column].push(move.player);
     }
   });
-  return { board, nextPlayer };
+  return board;
 };
 
 const validatePlayer = (players, player) => {
@@ -42,16 +40,33 @@ const isWinningMove = (board) => {
   return false;
 };
 
-export default class Game {
+const renderBoard = (board) => {
+  let line
+  for (let i = 3; i >= 0; i--) {
+    line = [];
+    for (let j = 0; j < board.length; j++) {
+      if (board[j][i] !== undefined) {
+        line.push(board[j][i]);
+      } else {
+        line.push('-');
+      }
+    }
+    console.log(line.join(' '));
+  }
+};
 
-  constructor(players, columns, rows) {
-    this.players = players;
-    this.columns = columns || DEF_COLS;
-    this.rows = rows || DEF_ROWS;
-    this.state = STATE_LIVE;
-    this.moves = [];
-    this.nextPlayer = 0;
-    this.winner = null;
+export class Game {
+
+  constructor(data) {
+    this.players = data.players;
+    this.columns = data.columns || DEF_COLS;
+    this.rows = data.rows || DEF_ROWS;
+    this.state = data.state || STATE_LIVE;
+    this.moves = data.moves || [];
+    this.nextPlayer = data.nextPlayer || 0;
+    this.winner = data.winner || null;
+    this.gameId = data.gameId;
+    this.createDate = data.createDate;
   }
 
   newMove(player, column) {
@@ -59,29 +74,36 @@ export default class Game {
     if (this.state == STATE_DEAD) {
       // TODO: Error: Game is over
     }
+    if ( this.nextPlayer !=  playerIndex) {
+      // TODO: Error: not player's turn
+    }
     // columns are given in index base 1
     if (column < 1 || column > this.columns) {
       // TODO: Error: Invalid move
     }
     column--;
-    const { board, nextPlayer } = replayMoves(this.columns, this.moves);
-    if ( nextPlayer !=  playerIndex) {
-      // TODO: Error: not player's turn
-    }
+    let board = replayMoves(this.columns, this.moves);
     if (board[column].length == this.rows) {
       // TODO: Error: column is full
     }
-    this.moves.push({
+    const move = {
       type: MOVE,
       player: playerIndex,
       column,
-    });
+    };
+    // Make the move
+    board = makeMove(move, board);
+    // Record it
+    this.moves.push(move);
+
     if (isWinningMove(board)) {
       this.winner = playerIndex;
       this.state = STATE_DEAD;
     } else if (this.moves.length == this.rows * this.cols) {
       this.state = STATE_DEAD;
     }
+    this.nextPlayer = getOtherPlayer(playerIndex);
+    renderBoard(board);
     return this.moves.length - 1;
   }
 
@@ -103,20 +125,9 @@ export default class Game {
     return this.players[index];
   }
 
-  // set gameId(id) {
-  //   this.id = id;
-  // }
-
-  // get state() {
-  //   const state = {
-  //     players: this.players,
-  //     state: this.state,
-  //   }
-  //   if (this.state == STATE_1) {
-  //     state.winner = this.winner;
-  //   }
-  //   return state;
-  // }
+  isLive() {
+    return this.state == STATE_LIVE;
+  }
 
 }
 
