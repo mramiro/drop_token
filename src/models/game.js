@@ -47,11 +47,9 @@ export class Game {
     if ( this.nextPlayer !=  playerIndex) {
       // TODO: Error: not player's turn
     }
-    // columns are given in index base 1
-    if (column < 1 || column > this.columns) {
+    if (column < 0 || column >= this.columns) {
       // TODO: Error: Invalid move
     }
-    column--;
     let board = GameUtils.replayMoves(this.columns, this.moves);
     if (board[column].length == this.rows) {
       // TODO: Error: column is full

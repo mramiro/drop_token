@@ -10,7 +10,7 @@ test('Winning with a horizontal sequence', () => {
     moves,
   });
   const nextIndex = moves.length;
-  const moveIndex = game.newMove('a', 4);
+  const moveIndex = game.newMove('a', 3);
   expect(moveIndex).toBe(nextIndex);
   expect(game.winner).toBe(0);
   expect(game.isLive()).toBe(false);
@@ -25,7 +25,7 @@ test('Winning with a vertical sequence', () => {
     moves,
   });
   const nextIndex = moves.length;
-  const moveIndex = game.newMove('b', 2);
+  const moveIndex = game.newMove('b', 1);
   expect(moveIndex).toBe(nextIndex);
   expect(game.winner).toBe(1);
   expect(game.isLive()).toBe(false);
@@ -40,7 +40,7 @@ test('Winning with a positive diagonal sequence', () => {
     moves,
   });
   const nextIndex = moves.length;
-  const moveIndex = game.newMove('a', 3);
+  const moveIndex = game.newMove('a', 2);
   expect(moveIndex).toBe(nextIndex);
   expect(game.winner).toBe(0);
   expect(game.isLive()).toBe(false);
@@ -55,7 +55,7 @@ test('Winning with a negative diagonal sequence', () => {
     moves,
   });
   const nextIndex = moves.length;
-  const moveIndex = game.newMove('b', 1);
+  const moveIndex = game.newMove('b', 0);
   expect(moveIndex).toBe(nextIndex);
   expect(game.winner).toBe(1);
   expect(game.isLive()).toBe(false);
