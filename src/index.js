@@ -14,8 +14,8 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  const status = err.status || 400;
-  res.status(400).send();
+  const status = err.statusCode || 400;
+  res.status(status).send();
 });
 
 app.listen(port, () => {

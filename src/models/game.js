@@ -7,6 +7,12 @@ export const MOVE = 'MOVE';
 export const QUIT = 'QUIT';
 export const STATE_LIVE = 'IN PROGRESS';
 export const STATE_DEAD = 'DONE';
+export const ERRORS = {
+  INVALID_PLAYER: 'Invalid player',
+  GAME_OVER: 'Game is over',
+  WRONG_TURN: 'Not player\'s turn',
+  INVALID_MOVE: 'Not a valid move',
+};
 
 const getOtherPlayer = (playerIndex) => {
   return 1 - playerIndex;
@@ -33,18 +39,31 @@ export class Game {
 
   newMove(player, column) {
     const playerIndex = this.getPlayerIndex(player);
-    if (this.state == STATE_DEAD) {
-      // TODO: Error: Game is over
+    if (playerIndex == -1) {
+      const err = new Error(ERRORS.INVALID_PLAYER);
+      err.statusCode = 404;
+      return err;
     }
-    if ( this.nextPlayer !=  playerIndex) {
-      // TODO: Error: not player's turn
+    if (this.state == STATE_DEAD) {
+      const err = new Error(ERRORS.GAME_OVER);
+      err.statusCode = 400;
+      return err;
+    }
+    if (this.nextPlayer !=  playerIndex) {
+      const err = new Error(ERRORS.WRONG_TURN);
+      err.statusCode = 409;
+      return err;
     }
     if (column < 0 || column >= this.columns) {
-      // TODO: Error: Invalid move
+      const err = new Error(ERRORS.INVALID_MOVE);
+      err.statusCode = 400;
+      return err;
     }
     let board = GameUtils.replayMoves(this.columns, this.moves);
     if (board[column].length == this.rows) {
-      // TODO: Error: column is full
+      const err = new Error(ERRORS.INVALID_MOVE);
+      err.statusCode = 400;
+      return err;
     }
     const move = {
       type: MOVE,
@@ -70,7 +89,9 @@ export class Game {
   quit(player) {
     const playerIndex = this.getPlayerIndex(player);
     if (this.state == STATE_DEAD) {
-      // TODO: Error: Game already ended
+      const err = new Error(ERRORS.GAME_OVER);
+      err.statusCode = 410;
+      return err;
     }
     this.moves.push({
       type: QUIT,
@@ -86,15 +107,11 @@ export class Game {
   }
 
   getPlayerIndex(playerName) {
-    const playerIndex = this.players.indexOf(playerName);
-    if (playerIndex == -1) {
-      // TODO: Error: player not part of game
-    }
-    return playerIndex;
+    return this.players.indexOf(playerName);
   }
 
   hasPlayer(playerName) {
-    return this.players.indexOf(playerName) != -1;
+    return this.getPlayerIndex() != -1;
   }
 
   isLive() {

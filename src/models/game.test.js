@@ -8,6 +8,7 @@ test('Winning with a horizontal sequence', () => {
     columns: 4,
     rows: 4,
     moves,
+    nextPlayer: 0,
   });
   const nextIndex = moves.length;
   const moveIndex = game.newMove('a', 3);
@@ -23,6 +24,7 @@ test('Winning with a vertical sequence', () => {
     columns: 4,
     rows: 4,
     moves,
+    nextPlayer: 1,
   });
   const nextIndex = moves.length;
   const moveIndex = game.newMove('b', 1);
@@ -38,6 +40,7 @@ test('Winning with a positive diagonal sequence', () => {
     columns: 4,
     rows: 4,
     moves,
+    nextPlayer: 0,
   });
   const nextIndex = moves.length;
   const moveIndex = game.newMove('a', 2);
@@ -53,6 +56,7 @@ test('Winning with a negative diagonal sequence', () => {
     columns: 4,
     rows: 4,
     moves,
+    nextPlayer: 1,
   });
   const nextIndex = moves.length;
   const moveIndex = game.newMove('b', 0);

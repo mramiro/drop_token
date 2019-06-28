@@ -2,6 +2,7 @@ import express from 'express';
 import validate from 'express-validation';
 import validation from './validation/dropToken';
 import GameService from '../services/gameService';
+import {Game} from '../models/game';
 
 const router = express.Router();
 
@@ -42,7 +43,7 @@ router.get('/:gameId', async (req, res) => {
 });
 
 // POST a new move
-router.post('/:gameId/:playerId', validate(validation.newMove), async (req, res) => {
+router.post('/:gameId/:playerId', validate(validation.newMove), async (req, res, next) => {
   const { gameId, playerId } = req.params;
   const { column } = req.body;
   const service = new GameService();
@@ -51,11 +52,14 @@ router.post('/:gameId/:playerId', validate(validation.newMove), async (req, res)
     res.status(404).send();
     return;
   }
-  const moveNumber = game.newMove(playerId, column);
-  // TODO: Add errors for invalid players and moves
-  game = service.updateGame(game);
-  if (game) {
-    const move = { move: `/${gameId}/moves/${moveNumber}` };
+  const newMove = game.newMove(playerId, column);
+  if (newMove instanceof Error) {
+    console.log(newMove);
+    return next(newMove);
+  }
+  game = await service.updateGame(game);
+  if (game instanceof Game) {
+    const move = { move: `/${gameId}/moves/${newMove}` };
     res.send(move);
   } else {
     res.status(500);
