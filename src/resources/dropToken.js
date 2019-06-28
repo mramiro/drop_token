@@ -54,7 +54,6 @@ router.post('/:gameId/:playerId', validate(validation.newMove), async (req, res,
   }
   const newMove = game.newMove(playerId, column);
   if (newMove instanceof Error) {
-    console.log(newMove);
     return next(newMove);
   }
   game = await service.updateGame(game);
@@ -85,7 +84,7 @@ router.delete('/:gameId/:playerId', async (req, res) => {
 });
 
 // GET a game's list of moves
-router.get('/:gameId/moves', async (req, res) => {
+router.get('/:gameId/moves', validate(validation.getMoves), async (req, res) => {
   const { gameId } = req.params;
   const service = new GameService();
   const game = await service.getGameById(gameId);
@@ -93,15 +92,8 @@ router.get('/:gameId/moves', async (req, res) => {
     res.status(404).send();
     return;
   }
-  let { start, until } = req.query;
-  start = parseInt(start || 0);
-  until = parseInt(until || -1);
-  if (start < 0) {
-    start = 0;
-  }
-  if (until < 0) {
-    until = game.moves.length;
-  }
+  const start = req.query.start;
+  const until = req.query.until || game.moves.length;
   const moves = game.moves.slice(start, until).map((move) => {
     move.player = game.getPlayerName(move.player);
     return move;

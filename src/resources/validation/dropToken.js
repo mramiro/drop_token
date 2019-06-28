@@ -16,4 +16,11 @@ validation.newMove = {
   }
 };
 
+validation.getMoves = {
+  query: {
+    start: Joi.number().integer().min(0).default(0),
+    until: Joi.number().integer().positive(),
+  }
+};
+
 export default validation;
