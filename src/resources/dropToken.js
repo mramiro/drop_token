@@ -1,12 +1,12 @@
 import express from 'express';
-import Games from '../repositories/games';
+import GameService from '../services/gameService';
 
 const router = express.Router();
 
 // GET list of games
 router.get('/', async (req, res) => {
-  const gamesRepo = new Games();
-  let games = await gamesRepo.getGames();
+  const service = new GameService();
+  let games = await service.getGameService();
   if (games === null) {
     games = [];
   }
@@ -15,16 +15,16 @@ router.get('/', async (req, res) => {
 
 // POST new game
 router.post('/', async (req, res) => {
-  const gamesRepo = new Games();
-  const game = await gamesRepo.createGame(req.body);
+  const service = new GameService();
+  const game = await service.createGame(req.body);
   res.send({ gameId: game.gameId });
 });
 
 // GET a game's state
 router.get('/:gameId', async (req, res) => {
   const { gameId } = req.params;
-  const gamesRepo = new Games();
-  const game = await gamesRepo.getGameById(gameId);
+  const service = new GameService();
+  const game = await service.getGameById(gameId);
   if (game === null) {
     res.status(404).send();
     return;
@@ -43,15 +43,15 @@ router.get('/:gameId', async (req, res) => {
 router.post('/:gameId/:playerId', async (req, res) => {
   const { gameId, playerId } = req.params;
   const { column } = req.body;
-  const gamesRepo = new Games();
-  let game = await gamesRepo.getGameById(gameId);
+  const service = new GameService();
+  let game = await service.getGameById(gameId);
   if (game === null) {
     res.status(404).send();
     return;
   }
   const moveNumber = game.newMove(playerId, column);
   // TODO: Add errors for invalid players and moves
-  game = gamesRepo.updateGame(game);
+  game = service.updateGame(game);
   if (game) {
     const move = { move: `/${gameId}/moves/${moveNumber}` };
     res.send(move);
@@ -63,8 +63,8 @@ router.post('/:gameId/:playerId', async (req, res) => {
 // DELETE a player from a game (resign)
 router.delete('/:gameId/:playerId', async (req, res) => {
   const { gameId, playerId } = req.params;
-  const gamesRepo = new Games();
-  const game = await gamesRepo.getGameById(gameId);
+  const service = new GameService();
+  const game = await service.getGameById(gameId);
   if (game === null || !game.hasPlayer(playerId)) {
     res.status(404).send();
     return;
@@ -74,15 +74,15 @@ router.delete('/:gameId/:playerId', async (req, res) => {
     return;
   }
   game.quit(playerId);
-  gamesRepo.updateGame(game);
+  service.updateGame(game);
   res.status(202).send();
 });
 
 // GET a game's list of moves
 router.get('/:gameId/moves', async (req, res) => {
   const { gameId } = req.params;
-  const gamesRepo = new Games();
-  const game = await gamesRepo.getGameById(gameId);
+  const service = new GameService();
+  const game = await service.getGameById(gameId);
   if (game === null || game.moves.length == 0) {
     res.status(404).send();
     return;
@@ -106,8 +106,8 @@ router.get('/:gameId/moves', async (req, res) => {
 // GET a specific move
 router.get('/:gameId/moves/:index', async (req, res) => {
   const { gameId, index } = req.params;
-  const gamesRepo = new Games();
-  const game = await gamesRepo.getGameById(gameId);
+  const service = new GameService();
+  const game = await service.getGameById(gameId);
   let i = parseInt(index);
   if (game === null || game.moves[i] === undefined) {
     res.status(404).send();

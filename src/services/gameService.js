@@ -5,7 +5,7 @@ import { Game, STATE_LIVE, STATE_DEAD } from '../models/game';
 const TABLE_NAME = 'games';
 const GSI_NAME = 'state-createDate-index';
 
-export default class Games {
+export default class GameService {
 
   constructor(config) {
     const awsConfig = {
