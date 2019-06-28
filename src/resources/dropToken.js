@@ -1,4 +1,6 @@
 import express from 'express';
+import validate from 'express-validation';
+import validation from './validation/dropToken';
 import GameService from '../services/gameService';
 
 const router = express.Router();
@@ -14,7 +16,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST new game
-router.post('/', async (req, res) => {
+router.post('/', validate(validation.newGame), async (req, res) => {
   const service = new GameService();
   const game = await service.createGame(req.body);
   res.send({ gameId: game.gameId });
@@ -40,7 +42,7 @@ router.get('/:gameId', async (req, res) => {
 });
 
 // POST a new move
-router.post('/:gameId/:playerId', async (req, res) => {
+router.post('/:gameId/:playerId', validate(validation.newMove), async (req, res) => {
   const { gameId, playerId } = req.params;
   const { column } = req.body;
   const service = new GameService();

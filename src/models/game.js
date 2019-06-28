@@ -17,14 +17,6 @@ const makeMove = (move, board) => {
   return board;
 };
 
-const validatePlayer = (players, player) => {
-  const playerIndex = players.indexOf(player);
-  if (playerIndex == -1) {
-    // TODO: Error: player not part of game
-  }
-  return playerIndex;
-};
-
 export class Game {
 
   constructor(data) {
@@ -40,7 +32,7 @@ export class Game {
   }
 
   newMove(player, column) {
-    const playerIndex = validatePlayer(this.players, player);
+    const playerIndex = this.getPlayerIndex(player);
     if (this.state == STATE_DEAD) {
       // TODO: Error: Game is over
     }
@@ -76,7 +68,7 @@ export class Game {
   }
 
   quit(player) {
-    const playerIndex = validatePlayer(this.players, player);
+    const playerIndex = this.getPlayerIndex(player);
     if (this.state == STATE_DEAD) {
       // TODO: Error: Game already ended
     }
@@ -93,12 +85,20 @@ export class Game {
     return this.players[index];
   }
 
-  isLive() {
-    return this.state == STATE_LIVE;
+  getPlayerIndex(playerName) {
+    const playerIndex = this.players.indexOf(playerName);
+    if (playerIndex == -1) {
+      // TODO: Error: player not part of game
+    }
+    return playerIndex;
   }
 
   hasPlayer(playerName) {
     return this.players.indexOf(playerName) != -1;
+  }
+
+  isLive() {
+    return this.state == STATE_LIVE;
   }
 
 }
