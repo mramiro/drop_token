@@ -25,7 +25,7 @@ export default class GameService {
     };
     try {
       const data = await this.client.query(params).promise();
-      if (data.Item === undefined) {
+      if (data.Items === undefined) {
         return null;
       }
       const ids = data.Items.map((item) => {

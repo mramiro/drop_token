@@ -6,7 +6,7 @@ const router = express.Router();
 // GET list of games
 router.get('/', async (req, res) => {
   const service = new GameService();
-  let games = await service.getGameService();
+  let games = await service.getGames();
   if (games === null) {
     games = [];
   }
