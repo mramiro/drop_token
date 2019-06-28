@@ -1,5 +1,5 @@
-import AWS from 'aws-sdk';
 import uuidv4 from 'uuid/v4';
+import DynamoDBClient from '../config/dynamodbConfig';
 import { Game, STATE_LIVE, STATE_DEAD } from '../models/game';
 
 const TABLE_NAME = 'games';
@@ -7,13 +7,8 @@ const GSI_NAME = 'state-createDate-index';
 
 export default class GameService {
 
-  constructor(config) {
-    const awsConfig = {
-      region: process.env.AWS_REGION || 'us-west-1',
-      endpoint: 'http://localhost:8000',
-    };
-    AWS.config.update(awsConfig);
-    this.client = new AWS.DynamoDB.DocumentClient();
+  constructor() {
+    this.client = (new DynamoDBClient()).build();
   }
 
   async getGames() {
