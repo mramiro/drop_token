@@ -1,7 +1,10 @@
+import GameUtils from './gameUtils';
+
 const DEF_COLS = 4;
 const DEF_ROWS = 4;
-const MOVE = 'MOVE';
-const QUIT = 'QUIT';
+
+export const MOVE = 'MOVE';
+export const QUIT = 'QUIT';
 export const STATE_LIVE = 'IN PROGRESS';
 export const STATE_DEAD = 'DONE';
 
@@ -14,45 +17,12 @@ const makeMove = (move, board) => {
   return board;
 };
 
-const replayMoves = (cols, moves) => {
-  const board = [];
-  for (let i = 0; i < cols; i++) {
-    board[i] = [];
-  }
-  moves.forEach((move) => {
-    if (move.type == MOVE) {
-      board[move.column].push(move.player);
-    }
-  });
-  return board;
-};
-
 const validatePlayer = (players, player) => {
   const playerIndex = players.indexOf(player);
   if (playerIndex == -1) {
     // TODO: Error: player not part of game
   }
   return playerIndex;
-};
-
-const isWinningMove = (board) => {
-  // TODO: Check winning condition
-  return false;
-};
-
-const renderBoard = (board) => {
-  let line
-  for (let i = 3; i >= 0; i--) {
-    line = [];
-    for (let j = 0; j < board.length; j++) {
-      if (board[j][i] !== undefined) {
-        line.push(board[j][i]);
-      } else {
-        line.push('-');
-      }
-    }
-    console.log(line.join(' '));
-  }
 };
 
 export class Game {
@@ -82,7 +52,7 @@ export class Game {
       // TODO: Error: Invalid move
     }
     column--;
-    let board = replayMoves(this.columns, this.moves);
+    let board = GameUtils.replayMoves(this.columns, this.moves);
     if (board[column].length == this.rows) {
       // TODO: Error: column is full
     }
@@ -96,14 +66,14 @@ export class Game {
     // Record it
     this.moves.push(move);
 
-    if (isWinningMove(board)) {
+    if (GameUtils.isWinningMove(move, board)) {
       this.winner = playerIndex;
       this.state = STATE_DEAD;
     } else if (this.moves.length == this.rows * this.cols) {
       this.state = STATE_DEAD;
     }
     this.nextPlayer = getOtherPlayer(playerIndex);
-    renderBoard(board);
+    GameUtils.renderBoard(board);
     return this.moves.length - 1;
   }
 
